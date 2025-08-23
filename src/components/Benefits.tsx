@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, Bell, FileText, Sparkles } from 'lucide-react';
+import { CheckCircle, Bell, FileText, Sparkles, ArrowRight } from 'lucide-react';
 
 const Benefits: React.FC = () => {
   return (
