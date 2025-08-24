@@ -115,7 +115,12 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
       );
 
       if (signUpError) {
-        setError(signUpError.message);
+        // Handle rate limit error specifically
+        if (signUpError.message.includes('over_email_send_rate_limit')) {
+          setError('Too many signup attempts. Please wait a few moments before trying again.');
+        } else {
+          setError(signUpError.message);
+        }
         setLoading(false);
         return;
       }
@@ -137,13 +142,30 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
           });
 
         if (profileError) {
-          console.error('Profile creation error:', profileError);
+          // Handle RLS policy violation specifically
+          if (profileError.message.includes('row-level security policy')) {
+            setError('Account created successfully, but profile setup encountered an issue. Please try logging in.');
+          } else {
+            console.error('Profile creation error:', profileError);
+          }
+        } else {
+          // Only call success if both auth and profile creation succeeded
+          onSignUpSuccess();
+          setLoading(false);
+          return;
         }
       }
 
+      // If we reach here, auth succeeded but profile creation failed
+      // Still consider it a partial success
       onSignUpSuccess();
     } catch (err) {
-      setError('An unexpected error occurred');
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      if (errorMessage.includes('over_email_send_rate_limit')) {
+        setError('Too many signup attempts. Please wait a few moments before trying again.');
+      } else {
+        setError(errorMessage);
+      }
     }
 
     setLoading(false);
