@@ -49,6 +49,35 @@ export type Database = {
           updated_at?: string
         }
       }
+      tasks: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          priority: 'low' | 'medium' | 'high'
+          status: 'pending' | 'in_progress' | 'done'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          priority?: 'low' | 'medium' | 'high'
+          status?: 'pending' | 'in_progress' | 'done'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          priority?: 'low' | 'medium' | 'high'
+          status?: 'pending' | 'in_progress' | 'done'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }

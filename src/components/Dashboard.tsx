@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Settings, LogOut, Edit3, MapPin, Briefcase, Phone, Mail, Sun, Moon } from 'lucide-react';
+import { User, Settings, LogOut, Edit3, MapPin, Briefcase, Phone, Mail, Sun, Moon, CheckSquare } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
+import TaskTracker from './TaskTracker';
 import Hero from './Hero';
 import Benefits from './Benefits';
 import HowItWorks from './HowItWorks';
@@ -334,6 +335,11 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
                 <button className="bg-gradient-to-r from-purple-400 to-purple-500 hover:from-purple-500 hover:to-purple-600 text-white p-6 rounded-3xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
                   Generate Invoice
                 </button>
+              </div>
+
+              {/* Task Tracker */}
+              <div className="mt-16">
+                <TaskTracker />
               </div>
             </div>
           </section>
