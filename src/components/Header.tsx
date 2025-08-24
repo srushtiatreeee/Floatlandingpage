@@ -4,9 +4,10 @@ import { Sun, Moon, Menu } from 'lucide-react';
 interface HeaderProps {
   darkMode: boolean;
   setDarkMode: (value: boolean) => void;
+  onLoginClick: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode }) => {
+const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode, onLoginClick }) => {
   return (
     <header className="fixed top-0 w-full z-50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/20 dark:border-gray-800/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -44,7 +45,10 @@ const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode }) => {
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               
-              <button className="text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium">
+              <button 
+                onClick={onLoginClick}
+                className="text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium"
+              >
                 Log in
               </button>
               
