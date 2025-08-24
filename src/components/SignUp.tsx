@@ -296,12 +296,12 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
               
               <p className="text-gray-600 dark:text-gray-300 mb-6">
                 We've sent a confirmation link to <strong>{formData.email}</strong>. 
-                Please check your email and click the link to verify your account before signing in.
+                You must click the confirmation link in your email before you can sign in to your account.
               </p>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">
                 <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  <strong>Don't see the email?</strong> Check your spam folder or wait a few minutes for it to arrive.
+                  <strong>Important:</strong> You cannot log in until you confirm your email address. Check your spam folder if you don't see the confirmation email within a few minutes.
                 </p>
               </div>
               
