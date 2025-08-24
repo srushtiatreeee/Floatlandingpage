@@ -30,10 +30,38 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (!data) {
+        // No profile exists, create one
+        const newProfile = {
+          id: user.id,
+          first_name: user.user_metadata?.first_name || null,
+          last_name: user.user_metadata?.last_name || null,
+          profession: null,
+          company: null,
+          location: null,
+          phone: null,
+          experience: null,
+          project_types: []
+        };
+
+        const { data: createdProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([newProfile])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+        } else {
+          setProfile(createdProfile);
+        }
       } else {
         setProfile(data);
       }
