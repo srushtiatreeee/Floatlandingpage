@@ -31,7 +31,6 @@ function App() {
 
   const handleSignUpSuccess = () => {
     setShowSignUp(false);
-    // Show success message or redirect to email verification
   };
 
   if (loading) {
@@ -43,6 +42,28 @@ function App() {
           </div>
           <p className="text-gray-600 dark:text-gray-300">Loading...</p>
         </div>
+      </div>
+    );
+  }
+
+  // If user is authenticated, show the main landing page
+  if (user) {
+    return (
+      <div className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? 'dark bg-gray-900' : 'bg-gray-50'
+      }`}>
+        <Header 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode} 
+          onLoginClick={() => setShowLogin(true)}
+          onSignUpClick={() => setShowSignUp(true)}
+        />
+        <Hero />
+        <Benefits />
+        <HowItWorks />
+        <SocialProof />
+        <FAQ />
+        <Footer />
       </div>
     );
   }
