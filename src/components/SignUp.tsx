@@ -234,7 +234,31 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
 
     setLoading(false);
   };
-  const renderStepIndicator = () => (
+  const renderStepIndicator = () => {
+    return (
+      <div className="flex items-center justify-center mb-8">
+        {[1, 2, 3].map((step) => (
+          <React.Fragment key={step}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
+              step <= currentStep
+                ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+            }`}>
+              {step < currentStep ? <Check size={20} /> : step}
+            </div>
+            {step < 3 && (
+              <div className={`w-16 h-1 mx-2 rounded-full transition-all duration-300 ${
+                step < currentStep
+                  ? 'bg-gradient-to-r from-orange-400 to-orange-500'
+                  : 'bg-gray-200 dark:bg-gray-700'
+              }`} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    );
+  };
+
   if (showEmailConfirmation) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
@@ -292,29 +316,6 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
         </div>
       </div>
     );
-  }
-
-    <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3].map((step) => (
-        <React.Fragment key={step}>
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
-            step <= currentStep
-              ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg'
-              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-          }`}>
-            {step < currentStep ? <Check size={20} /> : step}
-          </div>
-          {step < 3 && (
-            <div className={`w-16 h-1 mx-2 rounded-full transition-all duration-300 ${
-              step < currentStep
-                ? 'bg-gradient-to-r from-orange-400 to-orange-500'
-                : 'bg-gray-200 dark:bg-gray-700'
-            }`} />
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
 
   const renderStep1 = () => (
     <div className="space-y-6">
