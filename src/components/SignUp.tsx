@@ -316,6 +316,7 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
         </div>
       </div>
     );
+  }
 
   const renderStep1 = () => (
     <div className="space-y-6">
