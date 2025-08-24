@@ -35,6 +35,12 @@ export function useAuth() {
         data: userData
       }
     })
+    
+    // Handle rate limit errors specifically
+    if (error && error.message.includes('over_email_send_rate_limit')) {
+      throw new Error('Too many signup attempts. Please wait a few moments before trying again.');
+    }
+    
     return { data, error }
   }
 
