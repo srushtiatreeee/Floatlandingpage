@@ -9,6 +9,7 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
+import Dashboard from './components/Dashboard';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -49,22 +50,7 @@ function App() {
   // If user is authenticated, show the main landing page
   if (user) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${
-        darkMode ? 'dark bg-gray-900' : 'bg-gray-50'
-      }`}>
-        <Header 
-          darkMode={darkMode} 
-          setDarkMode={setDarkMode} 
-          onLoginClick={() => setShowLogin(true)}
-          onSignUpClick={() => setShowSignUp(true)}
-        />
-        <Hero />
-        <Benefits />
-        <HowItWorks />
-        <SocialProof />
-        <FAQ />
-        <Footer />
-      </div>
+      <Dashboard darkMode={darkMode} setDarkMode={setDarkMode} />
     );
   }
 
