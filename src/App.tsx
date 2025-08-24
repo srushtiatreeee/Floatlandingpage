@@ -7,10 +7,12 @@ import SocialProof from './components/SocialProof';
 import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import Login from './components/Login';
+import SignUp from './components/SignUp';
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
 
   useEffect(() => {
     if (darkMode) {
@@ -19,6 +21,16 @@ function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  if (showSignUp) {
+    return (
+      <div className={`min-h-screen transition-colors duration-300 ${
+        darkMode ? 'dark bg-gray-900' : 'bg-gray-50'
+      }`}>
+        <SignUp onBackToHome={() => setShowSignUp(false)} />
+      </div>
+    );
+  }
 
   if (showLogin) {
     return (
@@ -34,7 +46,12 @@ function App() {
     <div className={`min-h-screen transition-colors duration-300 ${
       darkMode ? 'dark bg-gray-900' : 'bg-gray-50'
     }`}>
-      <Header darkMode={darkMode} setDarkMode={setDarkMode} onLoginClick={() => setShowLogin(true)} />
+      <Header 
+        darkMode={darkMode} 
+        setDarkMode={setDarkMode} 
+        onLoginClick={() => setShowLogin(true)}
+        onSignUpClick={() => setShowSignUp(true)}
+      />
       <Hero />
       <Benefits />
       <HowItWorks />

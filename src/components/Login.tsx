@@ -172,9 +172,12 @@ const Login: React.FC<LoginProps> = ({ onBackToHome }) => {
             <div className="text-center mt-8">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account?{' '}
-                <a href="#" className="font-semibold text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 transition-colors">
+                <button 
+                  onClick={onBackToHome}
+                  className="font-semibold text-orange-500 hover:text-orange-600 dark:text-orange-400 dark:hover:text-orange-300 transition-colors"
+                >
                   Start your free trial
-                </a>
+                </button>
               </p>
             </div>
           </div>
