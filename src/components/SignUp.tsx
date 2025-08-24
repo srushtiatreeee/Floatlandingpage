@@ -15,21 +15,6 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { signUp } = useAuth();
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    profession: '',
-    company: '',
-    location: '',
-    phone: '',
-    experience: '',
-    projectTypes: [] as string[],
-    agreeToTerms: false,
-    subscribeNewsletter: false
-  });
 
   const professions = [
     'UI/UX Designer',
@@ -61,6 +46,84 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
     'Consulting',
     'Development'
   ];
+
+  const countries = [
+    { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
+    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+    { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
+    { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
+    { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
+    { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
+    { code: 'BR', name: 'Brazil', flag: '🇧🇷', dialCode: '+55' },
+    { code: 'MX', name: 'Mexico', flag: '🇲🇽', dialCode: '+52' },
+    { code: 'ES', name: 'Spain', flag: '🇪🇸', dialCode: '+34' },
+    { code: 'IT', name: 'Italy', flag: '🇮🇹', dialCode: '+39' },
+    { code: 'NL', name: 'Netherlands', flag: '🇳🇱', dialCode: '+31' },
+    { code: 'SE', name: 'Sweden', flag: '🇸🇪', dialCode: '+46' },
+    { code: 'NO', name: 'Norway', flag: '🇳🇴', dialCode: '+47' },
+    { code: 'DK', name: 'Denmark', flag: '🇩🇰', dialCode: '+45' },
+    { code: 'FI', name: 'Finland', flag: '🇫🇮', dialCode: '+358' },
+    { code: 'CH', name: 'Switzerland', flag: '🇨🇭', dialCode: '+41' },
+    { code: 'AT', name: 'Austria', flag: '🇦🇹', dialCode: '+43' },
+    { code: 'BE', name: 'Belgium', flag: '🇧🇪', dialCode: '+32' },
+    { code: 'PT', name: 'Portugal', flag: '🇵🇹', dialCode: '+351' },
+    { code: 'IE', name: 'Ireland', flag: '🇮🇪', dialCode: '+353' },
+    { code: 'NZ', name: 'New Zealand', flag: '🇳🇿', dialCode: '+64' },
+    { code: 'SG', name: 'Singapore', flag: '🇸🇬', dialCode: '+65' },
+    { code: 'HK', name: 'Hong Kong', flag: '🇭🇰', dialCode: '+852' },
+    { code: 'JP', name: 'Japan', flag: '🇯🇵', dialCode: '+81' },
+    { code: 'KR', name: 'South Korea', flag: '🇰🇷', dialCode: '+82' },
+    { code: 'ZA', name: 'South Africa', flag: '🇿🇦', dialCode: '+27' },
+    { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', dialCode: '+971' },
+    { code: 'IL', name: 'Israel', flag: '🇮🇱', dialCode: '+972' },
+    { code: 'PL', name: 'Poland', flag: '🇵🇱', dialCode: '+48' }
+  ];
+
+  const popularCities = [
+    'New York, NY, USA',
+    'Los Angeles, CA, USA',
+    'London, UK',
+    'Toronto, ON, Canada',
+    'Sydney, NSW, Australia',
+    'Berlin, Germany',
+    'Paris, France',
+    'Amsterdam, Netherlands',
+    'Barcelona, Spain',
+    'Milan, Italy',
+    'Stockholm, Sweden',
+    'Copenhagen, Denmark',
+    'Zurich, Switzerland',
+    'Dublin, Ireland',
+    'Singapore',
+    'Tokyo, Japan',
+    'Seoul, South Korea',
+    'Mumbai, India',
+    'São Paulo, Brazil',
+    'Mexico City, Mexico',
+    'Cape Town, South Africa',
+    'Dubai, UAE',
+    'Tel Aviv, Israel',
+    'Warsaw, Poland',
+    'Remote/Worldwide'
+  ];
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    profession: '',
+    company: '',
+    location: '',
+    countryCode: '+1',
+    phone: '',
+    experience: '',
+    projectTypes: [] as string[],
+    agreeToTerms: false,
+    subscribeNewsletter: false
+  });
 
   const handleInputChange = (field: string, value: string | boolean | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -372,18 +435,16 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Location
           </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <MapPin className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm transition-all duration-300"
-              placeholder="City, Country"
-            />
-          </div>
+          <select
+            value={formData.location}
+            onChange={(e) => handleInputChange('location', e.target.value)}
+            className="w-full px-4 py-4 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white backdrop-blur-sm transition-all duration-300"
+          >
+            <option value="">Select your location</option>
+            {popularCities.map((city) => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -391,17 +452,30 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Phone Number (Optional)
         </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-            <Phone className="h-5 w-5 text-gray-400" />
+        <div className="flex space-x-2">
+          <select
+            value={formData.countryCode}
+            onChange={(e) => handleInputChange('countryCode', e.target.value)}
+            className="w-32 px-3 py-4 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white backdrop-blur-sm transition-all duration-300"
+          >
+            {countries.map((country) => (
+              <option key={country.code} value={country.dialCode}>
+                {country.flag} {country.dialCode}
+              </option>
+            ))}
+          </select>
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Phone className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm transition-all duration-300"
+              placeholder="123-456-7890"
+            />
           </div>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange('phone', e.target.value)}
-            className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-700/50 border border-gray-200/50 dark:border-gray-600/50 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 backdrop-blur-sm transition-all duration-300"
-            placeholder="+1 (555) 123-4567"
-          />
         </div>
       </div>
 
