@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sun, Moon, Menu } from 'lucide-react';
 
 interface HeaderProps {
@@ -9,6 +9,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode, onLoginClick, onSignUpClick }) => {
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
   return (
     <header className="fixed top-0 w-full z-50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/20 dark:border-gray-800/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,11 +71,56 @@ const Header: React.FC<HeaderProps> = ({ darkMode, setDarkMode, onLoginClick, on
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <button className="p-2">
+            <button 
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="p-2"
+            >
               <Menu size={24} className="text-gray-700 dark:text-gray-300" />
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {showMobileMenu && (
+          <div className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-t border-gray-200/20 dark:border-gray-800/20">
+            <div className="px-4 py-6 space-y-4">
+              <a href="#features" className="block text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium py-2">
+                Why choose?
+              </a>
+              <a href="#how-it-works" className="block text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium py-2">
+                Features
+              </a>
+              <a href="#pricing" className="block text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium py-2">
+                Pricing
+              </a>
+              <a href="#help" className="block text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium py-2">
+                Help
+              </a>
+              
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-3">
+                <button 
+                  onClick={() => {
+                    onLoginClick();
+                    setShowMobileMenu(false);
+                  }}
+                  className="block w-full text-left text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium py-2"
+                >
+                  Log in
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    onSignUpClick();
+                    setShowMobileMenu(false);
+                  }}
+                  className="block w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-center"
+                >
+                  Sign up
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

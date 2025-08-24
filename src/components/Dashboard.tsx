@@ -347,7 +347,7 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
       ) : (
         /* Landing Page Content */
         <>
-          <Hero />
+          <Hero onGetStartedClick={() => setShowProfile(true)} />
           <Benefits />
           <HowItWorks />
           <SocialProof />

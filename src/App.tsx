@@ -90,7 +90,7 @@ function App() {
         onLoginClick={() => setShowLogin(true)}
         onSignUpClick={() => setShowSignUp(true)}
       />
-      <Hero />
+      <Hero onGetStartedClick={() => setShowSignUp(true)} />
       <Benefits />
       <HowItWorks />
       <SocialProof />
