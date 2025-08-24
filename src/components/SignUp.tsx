@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Briefcase, MapPin, Phone, ArrowRight, Check } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 
 interface SignUpProps {
   onBackToHome: () => void;
+  onSignUpSuccess: () => void;
 }
 
-const SignUp: React.FC<SignUpProps> = ({ onBackToHome }) => {
+const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -75,6 +81,73 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome }) => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.agreeToTerms) {
+      setError('Please agree to the terms and conditions');
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Sign up with Supabase Auth
+      const { data, error: signUpError } = await signUp(
+        formData.email,
+        formData.password,
+        {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          profession: formData.profession,
+          company: formData.company,
+          location: formData.location,
+          phone: formData.phone,
+          experience: formData.experience,
+          project_types: formData.projectTypes,
+          subscribe_newsletter: formData.subscribeNewsletter
+        }
+      );
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      // Create profile record
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            profession: formData.profession,
+            company: formData.company,
+            location: formData.location,
+            phone: formData.phone,
+            experience: formData.experience,
+            project_types: formData.projectTypes
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+
+      onSignUpSuccess();
+    } catch (err) {
+      setError('An unexpected error occurred');
+    }
+
+    setLoading(false);
+  };
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
       {[1, 2, 3].map((step) => (
@@ -426,7 +499,13 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome }) => {
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/20">
             {renderStepIndicator()}
 
-            <form className="space-y-8">
+            <form className="space-y-8" onSubmit={handleSubmit}>
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-4">
+                  <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+                </div>
+              )}
+
               {currentStep === 1 && renderStep1()}
               {currentStep === 2 && renderStep2()}
               {currentStep === 3 && renderStep3()}
@@ -457,9 +536,9 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome }) => {
                     <button
                       type="submit"
                       disabled={!formData.agreeToTerms}
-                      className="group bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center"
+                      className="group bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center disabled:transform-none"
                     >
-                      Create Account
+                      {loading ? 'Creating Account...' : 'Create Account'}
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </button>
                   )}
