@@ -23,7 +23,11 @@ const Login: React.FC<LoginProps> = ({ onBackToHome, onLoginSuccess }) => {
     const { error } = await signIn(email, password);
     
     if (error) {
-      setError(error.message);
+      if (error.message.includes('Email not confirmed')) {
+        setError('Please check your email and click the confirmation link before signing in. Check your spam folder if you don\'t see the email.');
+      } else {
+        setError(error.message);
+      }
     } else {
       onLoginSuccess();
     }
