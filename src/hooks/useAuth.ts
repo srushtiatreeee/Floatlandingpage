@@ -49,6 +49,13 @@ export function useAuth() {
       email,
       password,
     })
+    
+    // Suppress console logging for expected email confirmation errors
+    if (error && error.message === 'Email not confirmed') {
+      // Return the error without letting it bubble up to console
+      return { data, error }
+    }
+    
     return { data, error }
   }
 
