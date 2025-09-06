@@ -17,41 +17,63 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [storageAvailable, setStorageAvailable] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get profile image URL from Supabase Storage
   React.useEffect(() => {
     if (profile?.id) {
-      getProfileImageUrl();
+      checkStorageAndGetImage();
     }
   }, [profile?.id]);
 
-  const getProfileImageUrl = async () => {
+  const checkStorageAndGetImage = async () => {
     if (!profile?.id) return;
 
     try {
+      // First check if the bucket exists by trying to list it
+      const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+      
+      if (listError) {
+        console.log('Storage not accessible:', listError.message);
+        return;
+      }
+
+      const bucketExists = buckets?.some(bucket => bucket.name === 'profile-pictures');
+      
+      if (!bucketExists) {
+        console.log('Profile pictures bucket does not exist');
+        return;
+      }
+
+      setStorageAvailable(true);
+
+      // Now try to get the profile image
       const { data } = supabase.storage
         .from('profile-pictures')
         .getPublicUrl(`${profile.id}/profile.jpg`);
       
-      // Check if bucket exists and image is accessible
+      // Check if image is accessible
       const response = await fetch(data.publicUrl);
       if (response.ok && response.status !== 404) {
         setProfileImageUrl(data.publicUrl);
       }
     } catch (error) {
-      // Silently handle bucket/image not found errors
-      console.log('Profile image not available');
+      console.log('Storage check failed:', error);
     }
   };
 
   const handleFileSelect = () => {
+    if (!storageAvailable) {
+      setUploadError('Profile picture storage is not available. Please contact support.');
+      return;
+    }
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
+    if (!file || !user || !storageAvailable) return;
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -151,8 +173,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
           <div className="space-y-4">
             <button
               onClick={handleFileSelect}
-              disabled={uploading}
-              className="group bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto"
+              disabled={uploading || !storageAvailable}
+              className={`group ${
+                storageAvailable 
+                  ? 'bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600' 
+                  : 'bg-gray-400'
+              } disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto`}
             >
               {uploading ? (
                 <>
@@ -162,7 +188,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
               ) : (
                 <>
                   <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                  <span>Upload Profile Picture</span>
+                  <span>{storageAvailable ? 'Upload Profile Picture' : 'Storage Not Available'}</span>
                 </>
               )}
             </button>
@@ -178,7 +204,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
 
             {/* Upload Guidelines */}
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Supported formats: JPG, PNG, GIF • Max size: 5MB
+              {storageAvailable 
+                ? 'Supported formats: JPG, PNG, GIF • Max size: 5MB'
+                : 'Profile picture storage needs to be configured'
+              }
             </p>
           </div>
 
