@@ -21,6 +21,12 @@ const ProfilePage: React.FC = () => {
     if (!user) return;
 
     try {
+      // Check if bucket exists first
+      const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+      if (bucketError || !buckets?.some(bucket => bucket.name === 'profile-pictures')) {
+        return; // Bucket doesn't exist, skip loading
+      }
+
       const { data: files, error } = await supabase.storage
         .from('profile-pictures')
         .list(`${user.id}/`, {
@@ -70,6 +76,12 @@ const ProfilePage: React.FC = () => {
     setUploadSuccess(false);
 
     try {
+      // Check if bucket exists before upload
+      const { data: buckets, error: bucketError } = await supabase.storage.listBuckets();
+      if (bucketError || !buckets?.some(bucket => bucket.name === 'profile-pictures')) {
+        throw new Error('Profile picture storage is not available. Please contact support.');
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/profile.${fileExt}`;
 
