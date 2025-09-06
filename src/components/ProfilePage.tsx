@@ -16,7 +16,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,6 +27,32 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const loadProfileImage = async () => {
     if (!user) return;
 
+    try {
+      // Try to get existing profile image
+      const { data: files, error } = await supabase.storage
+        .from('profile-pictures')
+        .list(`${user.id}/`, {
+          limit: 10,
+          search: 'profile'
+        });
+
+      if (error || !files || files.length === 0) {
+        return;
+      }
+
+      // Find the profile image file
+      const profileFile = files.find(file => file.name.startsWith('profile.'));
+      if (profileFile) {
+        const { data } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(`${user.id}/${profileFile.name}`);
+        
+        setProfileImageUrl(data.publicUrl);
+      }
+    } catch (error) {
+      // Silently handle any storage errors
+      return;
+    }
     try {
       // Storage bucket doesn't exist - skip loading profile images
       // This prevents failed requests and console errors
@@ -62,19 +87,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setUploadError('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('File size must be less than 5MB');
-      return;
-    }
-
-    setUploading(true);
-    setUploadError('');
-    setUploadSuccess(false);
-
     try {
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
@@ -103,9 +115,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
       setTimeout(() => setUploadSuccess(false), 3000);
 
     } catch (error) {
-      const errorMessage = error instanceof Error && error.message.includes('Bucket not found') 
-        ? 'Profile picture storage is not available. Please contact support.'
-        : error instanceof Error ? error.message : 'Failed to upload image';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
       setUploadError(errorMessage);
     } finally {
       setUploading(false);
