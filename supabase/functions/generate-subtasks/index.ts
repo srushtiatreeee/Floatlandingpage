@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    // Call OpenAI API
+    // Call OpenAI API using the new format
     const openAIResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -96,9 +96,14 @@ Now generate subtasks for this task:
     }
 
     const openAIData = await openAIResponse.json()
-    const content = openAIData.content?.[0]?.text || openAIData.choices?.[0]?.message?.content
-
-    if (!content) {
+    
+    // Handle the new response format
+    let content = ''
+    if (openAIData.content && openAIData.content[0] && openAIData.content[0].text) {
+      content = openAIData.content[0].text
+    } else if (openAIData.choices && openAIData.choices[0] && openAIData.choices[0].message) {
+      content = openAIData.choices[0].message.content
+    } else {
       throw new Error('No content received from OpenAI')
     }
 
