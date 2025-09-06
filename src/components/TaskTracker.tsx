@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, CheckCircle, Clock, AlertCircle, X, Sparkles, Save } from 'lucide-react';
+import { Plus, Edit3, Trash2, CheckCircle, Clock, AlertCircle, X, Sparkles, Save, Search } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import type { Database } from '../lib/supabase';
@@ -19,6 +19,9 @@ const TaskTracker: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [generatingSubtasks, setGeneratingSubtasks] = useState<string | null>(null);
   const [suggestedSubtasks, setSuggestedSubtasks] = useState<Record<string, string[]>>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Task[]>([]);
+  const [searching, setSearching] = useState(false);
   const [newTask, setNewTask] = useState({
     title: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
@@ -151,6 +154,50 @@ const TaskTracker: React.FC = () => {
       setTasks(tasks.filter(task => task.id !== taskId));
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  const handleSmartSearch = async () => {
+    if (!user || !searchQuery.trim()) return;
+
+    setSearching(true);
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/smart-search`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          query: searchQuery.trim(),
+          userId: user.id 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setSearchResults(data.results || []);
+    } catch (error) {
+      console.error('Error performing smart search:', error);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSmartSearch();
     }
   };
 
@@ -332,6 +379,82 @@ const TaskTracker: React.FC = () => {
 
       {/* Task Tracker */}
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20">
+        {/* Smart Search Section */}
+        <div className="mb-8 p-6 bg-blue-50/50 dark:bg-blue-900/20 rounded-2xl border border-blue-200/30 dark:border-blue-800/30">
+          <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-4">Smart Search</h3>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <input
+                type="text"
+                placeholder="Search tasks by meaning, not just keywords..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleSearchKeyPress}
+                className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-blue-400 dark:placeholder-blue-300"
+              />
+            </div>
+            <button
+              onClick={handleSmartSearch}
+              disabled={searching || !searchQuery.trim()}
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              {searching ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>Searching...</span>
+                </>
+              ) : (
+                <>
+                  <Search size={18} />
+                  <span>Search</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Search Results */}
+          {searchResults.length > 0 && (
+            <div className="mt-6">
+              <h4 className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3">
+                Top {searchResults.length} Similar Tasks:
+              </h4>
+              <div className="space-y-2">
+                {searchResults.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center justify-between p-3 bg-white/70 dark:bg-gray-800/70 rounded-xl border border-blue-100 dark:border-blue-800/50 hover:shadow-sm transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-3 flex-1">
+                      {getStatusIcon(task.status)}
+                      <div className="flex-1">
+                        <h5 className="font-medium text-gray-900 dark:text-white text-sm">
+                          {task.title}
+                        </h5>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(task.status)}`}>
+                            {task.status.replace('_', ' ')}
+                          </span>
+                          <span className={`px-2 py-1 rounded-lg text-xs font-medium bg-gradient-to-r ${getPriorityColor(task.priority)} text-white`}>
+                            {task.priority}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {searchQuery && searchResults.length === 0 && !searching && (
+            <div className="mt-4 p-3 bg-blue-100/50 dark:bg-blue-900/30 rounded-xl">
+              <p className="text-blue-600 dark:text-blue-300 text-sm text-center">
+                No similar tasks found for "{searchQuery}"
+              </p>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Personal Task Tracker</h3>
           <button
