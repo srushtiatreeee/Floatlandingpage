@@ -8,7 +8,7 @@ const ProfilePage: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>('https://fvccfboaiafkonvzkmop.supabase.co/storage/v1/object/public/profile-pictures/Screenshot%202025-08-12%20200934%20(1).png');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
