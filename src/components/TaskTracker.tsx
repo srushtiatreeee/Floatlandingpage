@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
+import { Plus, Edit3, Trash2, CheckCircle, Clock, AlertCircle, X, Sparkles, Save } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import type { Database } from '../lib/supabase';
@@ -7,13 +7,18 @@ import type { Database } from '../lib/supabase';
 type Task = Database['public']['Tables']['tasks']['Row'];
 type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
 type TaskUpdate = Database['public']['Tables']['tasks']['Update'];
+type Subtask = Database['public']['Tables']['subtasks']['Row'];
+type SubtaskInsert = Database['public']['Tables']['subtasks']['Insert'];
 
 const TaskTracker: React.FC = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [subtasks, setSubtasks] = useState<Record<string, Subtask[]>>({});
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [generatingSubtasks, setGeneratingSubtasks] = useState<string | null>(null);
+  const [suggestedSubtasks, setSuggestedSubtasks] = useState<Record<string, string[]>>({});
   const [newTask, setNewTask] = useState({
     title: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
@@ -23,6 +28,7 @@ const TaskTracker: React.FC = () => {
   useEffect(() => {
     if (user) {
       fetchTasks();
+      fetchSubtasks();
     }
   }, [user]);
 
@@ -46,6 +52,36 @@ const TaskTracker: React.FC = () => {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSubtasks = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('subtasks')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching subtasks:', error);
+        return;
+      }
+
+      // Group subtasks by parent task ID
+      const groupedSubtasks: Record<string, Subtask[]> = {};
+      data?.forEach(subtask => {
+        if (!groupedSubtasks[subtask.parent_task_id]) {
+          groupedSubtasks[subtask.parent_task_id] = [];
+        }
+        groupedSubtasks[subtask.parent_task_id].push(subtask);
+      });
+
+      setSubtasks(groupedSubtasks);
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
@@ -113,6 +149,112 @@ const TaskTracker: React.FC = () => {
       }
 
       setTasks(tasks.filter(task => task.id !== taskId));
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const generateSubtasks = async (taskId: string, taskTitle: string) => {
+    setGeneratingSubtasks(taskId);
+    
+    try {
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-subtasks`;
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ taskTitle }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setSuggestedSubtasks(prev => ({
+        ...prev,
+        [taskId]: data.subtasks || []
+      }));
+    } catch (error) {
+      console.error('Error generating subtasks:', error);
+      // Show user-friendly error
+      setSuggestedSubtasks(prev => ({
+        ...prev,
+        [taskId]: ['Failed to generate subtasks. Please try again.']
+      }));
+    } finally {
+      setGeneratingSubtasks(null);
+    }
+  };
+
+  const saveSubtask = async (parentTaskId: string, subtaskTitle: string) => {
+    if (!user) return;
+
+    try {
+      const subtaskData: SubtaskInsert = {
+        parent_task_id: parentTaskId,
+        user_id: user.id,
+        title: subtaskTitle,
+        status: 'pending'
+      };
+
+      const { data, error } = await supabase
+        .from('subtasks')
+        .insert([subtaskData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving subtask:', error);
+        return;
+      }
+
+      // Update local state
+      setSubtasks(prev => ({
+        ...prev,
+        [parentTaskId]: [...(prev[parentTaskId] || []), data]
+      }));
+
+      // Remove from suggestions
+      setSuggestedSubtasks(prev => ({
+        ...prev,
+        [parentTaskId]: prev[parentTaskId]?.filter(s => s !== subtaskTitle) || []
+      }));
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const updateSubtaskStatus = async (subtaskId: string, status: 'pending' | 'in_progress' | 'done') => {
+    try {
+      const { error } = await supabase
+        .from('subtasks')
+        .update({ status })
+        .eq('id', subtaskId);
+
+      if (error) {
+        console.error('Error updating subtask:', error);
+        return;
+      }
+
+      // Update local state
+      setSubtasks(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(taskId => {
+          updated[taskId] = updated[taskId].map(subtask =>
+            subtask.id === subtaskId ? { ...subtask, status } : subtask
+          );
+        });
+        return updated;
+      });
     } catch (error) {
       console.error('Error:', error);
     }
@@ -292,6 +434,14 @@ const TaskTracker: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
+                    onClick={() => generateSubtasks(task.id, task.title)}
+                    disabled={generatingSubtasks === task.id}
+                    className="p-2 text-gray-500 hover:text-purple-500 dark:hover:text-purple-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Generate Subtasks with AI"
+                  >
+                    <Sparkles size={16} className={generatingSubtasks === task.id ? 'animate-spin' : ''} />
+                  </button>
+                  <button
                     onClick={() => setEditingTask(task)}
                     className="p-2 text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                   >
@@ -305,6 +455,66 @@ const TaskTracker: React.FC = () => {
                   </button>
                 </div>
               </div>
+
+              {/* AI Subtask Generation */}
+              {generatingSubtasks === task.id && (
+                <div className="ml-8 mt-3 p-4 bg-purple-50/50 dark:bg-purple-900/20 rounded-xl border border-purple-200/50 dark:border-purple-800/50">
+                  <div className="flex items-center space-x-2 text-purple-600 dark:text-purple-400">
+                    <Sparkles size={16} className="animate-spin" />
+                    <span className="text-sm font-medium">Generating subtasks with AI...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Suggested Subtasks */}
+              {suggestedSubtasks[task.id] && suggestedSubtasks[task.id].length > 0 && (
+                <div className="ml-8 mt-3 p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-200/50 dark:border-blue-800/50">
+                  <h5 className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-3">AI Suggested Subtasks:</h5>
+                  <div className="space-y-2">
+                    {suggestedSubtasks[task.id].map((suggestion, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                        <span className="text-sm text-gray-700 dark:text-gray-300 flex-1">{suggestion}</span>
+                        <button
+                          onClick={() => saveSubtask(task.id, suggestion)}
+                          className="ml-2 p-1 text-green-500 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+                          title="Save as subtask"
+                        >
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Existing Subtasks */}
+              {subtasks[task.id] && subtasks[task.id].length > 0 && (
+                <div className="ml-8 mt-3 space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Subtasks:</h5>
+                  {subtasks[task.id].map((subtask) => (
+                    <div key={subtask.id} className="flex items-center space-x-3 p-2 bg-gray-50/50 dark:bg-gray-700/30 rounded-lg">
+                      <button
+                        onClick={() => {
+                          const nextStatus = subtask.status === 'pending' ? 'in_progress' : 
+                                           subtask.status === 'in_progress' ? 'done' : 'pending';
+                          updateSubtaskStatus(subtask.id, nextStatus);
+                        }}
+                        className="flex-shrink-0"
+                      >
+                        {getStatusIcon(subtask.status)}
+                      </button>
+                      <span className={`text-sm flex-1 ${
+                        subtask.status === 'done' ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {subtask.title}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(subtask.status)}`}>
+                        {subtask.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             ))
           )}
         </div>

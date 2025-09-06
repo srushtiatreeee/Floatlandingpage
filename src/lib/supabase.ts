@@ -78,6 +78,35 @@ export type Database = {
           updated_at?: string
         }
       }
+      subtasks: {
+        Row: {
+          id: string
+          parent_task_id: string
+          user_id: string
+          title: string
+          status: 'pending' | 'in_progress' | 'done'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          parent_task_id: string
+          user_id: string
+          title: string
+          status?: 'pending' | 'in_progress' | 'done'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          parent_task_id?: string
+          user_id?: string
+          title?: string
+          status?: 'pending' | 'in_progress' | 'done'
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
   }
 }
