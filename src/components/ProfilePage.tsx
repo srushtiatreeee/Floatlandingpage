@@ -34,13 +34,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
         .from('profile-pictures')
         .getPublicUrl(`${profile.id}/profile.jpg`);
       
-      // Check if image exists by trying to fetch it
+      // Check if bucket exists and image is accessible
       const response = await fetch(data.publicUrl);
-      if (response.ok) {
+      if (response.ok && response.status !== 404) {
         setProfileImageUrl(data.publicUrl);
       }
     } catch (error) {
-      console.error('Error getting profile image URL:', error);
+      // Silently handle bucket/image not found errors
+      console.log('Profile image not available');
     }
   };
 
@@ -69,6 +70,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
     setUploadSuccess(false);
 
     try {
+      // Check if bucket exists first
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        throw new Error('Unable to access storage. Please contact support.');
+      }
+      
+      const bucketExists = buckets?.some(bucket => bucket.name === 'profile-pictures');
+      
+      if (!bucketExists) {
+        throw new Error('Profile picture storage is not set up. Please contact support to enable this feature.');
+      }
+
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/profile.${fileExt}`;
@@ -97,7 +111,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
 
     } catch (error) {
       console.error('Error uploading file:', error);
-      setUploadError(error instanceof Error ? error.message : 'Failed to upload image');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
+      setUploadError(errorMessage);
     } finally {
       setUploading(false);
       // Clear the file input
