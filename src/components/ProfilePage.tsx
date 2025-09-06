@@ -70,19 +70,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
     setUploadSuccess(false);
 
     try {
-      // Check if bucket exists first
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        throw new Error('Unable to access storage. Please contact support.');
-      }
-      
-      const bucketExists = buckets?.some(bucket => bucket.name === 'profile-pictures');
-      
-      if (!bucketExists) {
-        throw new Error('Profile picture storage is not set up. Please contact support to enable this feature.');
-      }
-
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/profile.${fileExt}`;
