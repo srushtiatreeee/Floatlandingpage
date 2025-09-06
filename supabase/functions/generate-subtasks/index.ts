@@ -33,26 +33,59 @@ Deno.serve(async (req: Request) => {
     }
 
     // Call OpenAI API
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    const openAIResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${openAIApiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4',
-        messages: [
+        model: 'gpt-5',
+        input: [
           {
-            role: 'system',
-            content: 'You are a helpful assistant that breaks down big tasks into simple, clear subtasks. Given a main task title, return a list of 5 to 7 clear, short subtasks needed to complete it. The subtasks should be practical and written in plain language. Return them as a plain JSON array. Do not include any extra text or explanations.'
+            role: 'developer',
+            content: [
+              {
+                type: 'input_text',
+                text: `You are a helpful assistant that breaks down big tasks into simple, clear subtasks. Given a main task title, return a list of 5 to 7 clear, short subtasks needed to complete it. The subtasks should be practical and written in plain language. Return them as a plain JSON array. Do not include any extra text or explanations.
+Main task: "Plan a wedding"
+Example output:
+[
+  "Book wedding venue",
+  "Hire photographer", 
+  "Send invitations",
+  "Arrange catering",
+  "Plan wedding ceremony",
+  "Choose wedding dress",
+  "Plan honeymoon"
+]
+Now generate subtasks for this task:
+"${taskTitle}"`
+              }
+            ]
           },
           {
             role: 'user',
-            content: `Generate subtasks for this task: "${taskTitle}"`
+            content: [
+              {
+                type: 'input_text',
+                text: `Generate subtasks for: ${taskTitle}`
+              }
+            ]
           }
         ],
-        max_tokens: 500,
-        temperature: 0.7,
+        text: {
+          format: {
+            type: 'text'
+          },
+          verbosity: 'medium'
+        },
+        reasoning: {
+          effort: 'medium',
+          summary: 'auto'
+        },
+        tools: [],
+        store: true
       }),
     })
 
@@ -63,7 +96,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const openAIData = await openAIResponse.json()
-    const content = openAIData.choices[0]?.message?.content
+    const content = openAIData.content?.[0]?.text || openAIData.choices?.[0]?.message?.content
 
     if (!content) {
       throw new Error('No content received from OpenAI')
