@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, Upload, Camera, X, Check } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
@@ -17,29 +17,52 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
-  const [storageAvailable, setStorageAvailable] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Storage functionality disabled until bucket is created
-  // To enable: Create 'profile-pictures' bucket in Supabase Storage
+  useEffect(() => {
+    if (user) {
+      loadProfileImage();
+    }
+  }, [user]);
+
+  const loadProfileImage = async () => {
+    if (!user) return;
+
+    try {
+      // Try to get the profile image (check for common extensions)
+      const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      
+      for (const ext of extensions) {
+        const fileName = `${user.id}/profile.${ext}`;
+        
+        // Check if file exists by trying to get its public URL
+        const { data } = supabase.storage
+          .from('profile-pictures')
+          .getPublicUrl(fileName);
+
+        // Test if the image actually exists by making a HEAD request
+        try {
+          const response = await fetch(data.publicUrl, { method: 'HEAD' });
+          if (response.ok) {
+            setProfileImageUrl(data.publicUrl);
+            return;
+          }
+        } catch {
+          // Continue to next extension
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile image:', error);
+    }
+  };
 
   const handleFileSelect = () => {
-    if (!storageAvailable) {
-      setUploadError('Profile picture storage is not set up. Please contact support to enable this feature.');
-      return;
-    }
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
-
-    // Check if storage is available
-    if (!storageAvailable) {
-      setUploadError('Profile picture storage is not set up. Please contact support to enable this feature.');
-      return;
-    }
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -139,18 +162,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
           <div className="space-y-4">
             <button
               onClick={handleFileSelect}
-              disabled={uploading || !storageAvailable}
+              disabled={uploading}
               className="group bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-8 py-4 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center space-x-2 mx-auto"
             >
               {uploading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   <span>Uploading...</span>
-                </>
-              ) : !storageAvailable ? (
-                <>
-                  <Upload className="w-5 h-5" />
-                  <span>Upload Not Available</span>
                 </>
               ) : (
                 <>
@@ -171,10 +189,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
 
             {/* Upload Guidelines */}
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {storageAvailable 
-                ? "Supported formats: JPG, PNG, GIF, WebP • Max size: 5MB"
-                : "Profile picture upload requires Supabase Storage bucket setup."
-              }
+              Supported formats: JPG, PNG, GIF, WebP • Max size: 5MB
             </p>
           </div>
 
