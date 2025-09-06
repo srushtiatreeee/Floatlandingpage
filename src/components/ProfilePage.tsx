@@ -117,18 +117,8 @@ const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Profile Page
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-300">
-            Manage your profile picture and settings
-          </p>
-        </div>
-
         {/* Profile Picture Upload Card */}
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
           <div className="text-center">
@@ -219,36 +209,6 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* User Info Card */}
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Account Information
-          </h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">Email</span>
-              <span className="font-medium text-gray-900 dark:text-white">
-                {user?.email}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-gray-700">
-              <span className="text-gray-600 dark:text-gray-400">User ID</span>
-              <span className="font-mono text-sm text-gray-500 dark:text-gray-400">
-                {user?.id}
-              </span>
-            </div>
-            
-            <div className="flex items-center justify-between py-3">
-              <span className="text-gray-600 dark:text-gray-400">Account Created</span>
-              <span className="text-gray-900 dark:text-white">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-              </span>
-            </div>
           </div>
         </div>
       </div>
