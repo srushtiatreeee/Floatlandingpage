@@ -50,6 +50,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
         // Check if image exists by making a HEAD request
         const response = await fetch(data.publicUrl, { method: 'HEAD' });
         if (response.ok) {
+          setProfileImageUrl(data.publicUrl);
+          return;
         } else {
           // Try PNG format
           const { data: pngData } = supabase.storage
