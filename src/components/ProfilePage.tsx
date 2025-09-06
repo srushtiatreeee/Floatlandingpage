@@ -17,60 +17,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
-  const [storageAvailable, setStorageAvailable] = useState(true);
+  const [storageAvailable, setStorageAvailable] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get profile image URL from Supabase Storage
-  React.useEffect(() => {
-    if (profile?.id) {
-      getProfileImage();
-    }
-  }, [profile?.id]);
-
-  const getProfileImage = async () => {
-    if (!profile?.id) return;
-
-    try {
-      // First check if storage bucket exists by attempting to list files
-      const { error: listError } = await supabase.storage
-        .from('profile-pictures')
-        .list('', { limit: 1 });
-
-      if (listError && listError.message.includes('Bucket not found')) {
-        setStorageAvailable(false);
-        return;
-      }
-
-      if (!listError) {
-        // Try to get the profile image URL
-        const { data } = supabase.storage
-          .from('profile-pictures')
-          .getPublicUrl(`${profile.id}/profile.jpg`);
-        
-        // Check if image exists by making a HEAD request
-        const response = await fetch(data.publicUrl, { method: 'HEAD' });
-        if (response.ok) {
-          setProfileImageUrl(data.publicUrl);
-          return;
-        } else {
-          // Try PNG format
-          const { data: pngData } = supabase.storage
-            .from('profile-pictures')
-            .getPublicUrl(`${profile.id}/profile.png`);
-          
-          const pngResponse = await fetch(pngData.publicUrl, { method: 'HEAD' });
-          if (pngResponse.ok) {
-            setProfileImageUrl(pngData.publicUrl);
-          }
-        }
-      }
-    } catch (error) {
-      // Silently handle errors - storage might not be available
-      setStorageAvailable(false);
-    }
-  };
+  // Storage functionality disabled until bucket is created
+  // To enable: Create 'profile-pictures' bucket in Supabase Storage
 
   const handleFileSelect = () => {
+    if (!storageAvailable) {
+      setUploadError('Profile picture storage is not set up. Please contact support to enable this feature.');
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -80,7 +37,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
 
     // Check if storage is available
     if (!storageAvailable) {
-      setUploadError('Profile picture storage is not available. Please contact support.');
+      setUploadError('Profile picture storage is not set up. Please contact support to enable this feature.');
       return;
     }
 
@@ -113,10 +70,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
         });
 
       if (uploadError) {
-        if (uploadError.message.includes('Bucket not found')) {
-          setStorageAvailable(false);
-          throw new Error('Profile picture storage is not available. Please contact support.');
-        }
         throw uploadError;
       }
 
@@ -197,7 +150,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
               ) : !storageAvailable ? (
                 <>
                   <Upload className="w-5 h-5" />
-                  <span>Storage Not Available</span>
+                  <span>Upload Not Available</span>
                 </>
               ) : (
                 <>
@@ -220,7 +173,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {storageAvailable 
                 ? "Supported formats: JPG, PNG, GIF, WebP • Max size: 5MB"
-                : "Profile picture upload requires storage setup. Contact support for assistance."
+                : "Profile picture upload requires Supabase Storage bucket setup."
               }
             </p>
           </div>
