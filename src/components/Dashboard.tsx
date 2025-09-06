@@ -197,6 +197,19 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
               profile={profile} 
               onProfileUpdate={setProfile}
             />
+            
+            {/* Task Manager Section */}
+            <div className="mt-12">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                  Task Manager
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Manage your tasks and projects
+                </p>
+              </div>
+              <TaskTracker />
+            </div>
           </div>
         </main>
       ) : (
