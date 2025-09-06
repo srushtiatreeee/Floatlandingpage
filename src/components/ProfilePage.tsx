@@ -29,27 +29,36 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
     if (!user) return;
 
     try {
-      // Try to get the profile image (check for common extensions)
-      const extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+      // Check if storage bucket exists first
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
       
-      for (const ext of extensions) {
-        const fileName = `${user.id}/profile.${ext}`;
-        
-        // Check if file exists by trying to get its public URL
+      if (bucketsError || !buckets?.some(bucket => bucket.name === 'profile-pictures')) {
+        // Storage not available, don't attempt to load images
+        return;
+      }
+
+      // List files in the user's folder to find existing profile picture
+      const { data: files, error: listError } = await supabase.storage
+        .from('profile-pictures')
+        .list(`${user.id}/`, {
+          limit: 10,
+          search: 'profile'
+        });
+
+      if (listError || !files || files.length === 0) {
+        // No profile picture found
+        return;
+      }
+
+      // Find the profile picture file
+      const profileFile = files.find(file => file.name.startsWith('profile.'));
+      
+      if (profileFile) {
         const { data } = supabase.storage
           .from('profile-pictures')
-          .getPublicUrl(fileName);
-
-        // Test if the image actually exists by making a HEAD request
-        try {
-          const response = await fetch(data.publicUrl, { method: 'HEAD' });
-          if (response.ok) {
-            setProfileImageUrl(data.publicUrl);
-            return;
-          }
-        } catch {
-          // Continue to next extension
-        }
+          .getPublicUrl(`${user.id}/${profileFile.name}`);
+        
+        setProfileImageUrl(data.publicUrl);
       }
     } catch (error) {
       console.error('Error loading profile image:', error);
