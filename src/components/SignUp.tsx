@@ -189,39 +189,7 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
         return;
       }
 
-      // Create profile record
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            profession: formData.profession,
-            company: formData.company,
-            location: formData.location,
-            phone: formData.phone,
-            experience: formData.experience,
-            project_types: formData.projectTypes
-          });
-
-        if (profileError) {
-          // Handle RLS policy violation specifically
-          if (profileError.message.includes('row-level security policy')) {
-            setError('Account created successfully, but profile setup encountered an issue. Please try logging in.');
-          } else {
-            console.error('Profile creation error:', profileError);
-          }
-        } else {
-          // Only call success if both auth and profile creation succeeded
-          setShowEmailConfirmation(true);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // If we reach here, auth succeeded but profile creation failed
-      // Still consider it a partial success
+      // Show email confirmation - profile will be created when user logs in
       setShowEmailConfirmation(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
