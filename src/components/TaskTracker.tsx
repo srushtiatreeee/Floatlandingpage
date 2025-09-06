@@ -414,7 +414,8 @@ const TaskTracker: React.FC = () => {
             </div>
           ) : (
             tasks.map((task) => (
-              <div
+              <React.Fragment key={task.id}>
+                <div
                 key={task.id}
                 className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-2xl border border-gray-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300"
               >
@@ -515,6 +516,7 @@ const TaskTracker: React.FC = () => {
                   ))}
                 </div>
               )}
+              </React.Fragment>
             ))
           )}
         </div>
