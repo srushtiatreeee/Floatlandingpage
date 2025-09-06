@@ -75,7 +75,9 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
         setProfile(data);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching profile:', error);
+      // Don't throw the error, just log it and continue
+      // This prevents the app from breaking if Supabase is temporarily unavailable
     } finally {
       setLoading(false);
     }
