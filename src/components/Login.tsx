@@ -25,6 +25,8 @@ const Login: React.FC<LoginProps> = ({ onBackToHome, onLoginSuccess }) => {
     if (error) {
       if (error.message.includes('Email not confirmed')) {
         setError('Please check your email and click the confirmation link before signing in. Check your spam folder if you don\'t see the email.');
+      } else if (error.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again. If you recently signed up, make sure you\'ve confirmed your email address.');
       } else {
         setError(error.message);
       }
