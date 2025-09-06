@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
     // Perform vector similarity search on tasks
     // Note: This assumes you have a vector column and similarity function set up
     // For now, we'll do a simple text search as a fallback
-    const { data: tasks, error: searchError } = await supabase
+    let { data: tasks, error: searchError } = await supabase
       .from('tasks')
       .select('*')
       .eq('user_id', userId)
@@ -82,7 +82,7 @@ Deno.serve(async (req: Request) => {
     if (searchError) {
       console.error('Search error:', searchError)
       // Fallback to simple ILIKE search if text search fails
-      const { data: fallbackTasks, error: fallbackError } = await supabase
+      let { data: fallbackTasks, error: fallbackError } = await supabase
         .from('tasks')
         .select('*')
         .eq('user_id', userId)
@@ -93,20 +93,41 @@ Deno.serve(async (req: Request) => {
         throw new Error(`Search failed: ${fallbackError.message}`)
       }
 
-      return new Response(
-        JSON.stringify({ results: fallbackTasks || [] }),
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      )
+      tasks = fallbackTasks
     }
 
+    // Also search in subtasks and include parent tasks
+    const { data: subtaskMatches, error: subtaskError } = await supabase
+      .from('subtasks')
+      .select(`
+        parent_task_id,
+        title,
+        tasks!inner(*)
+      `)
+      .eq('user_id', userId)
+      .ilike('title', `%${query}%`)
+      .limit(10)
+
+    // Combine results and remove duplicates
+    const allTasks = [...(tasks || [])]
+    
+    if (!subtaskError && subtaskMatches) {
+      subtaskMatches.forEach(subtask => {
+        const parentTask = (subtask as any).tasks
+        if (parentTask && !allTasks.find(t => t.id === parentTask.id)) {
+          allTasks.push(parentTask)
+        }
+      })
+    }
+
+    // Limit to top 5 results
+    const finalResults = allTasks.slice(0, 5)
+
     return new Response(
-      JSON.stringify({ results: tasks || [] }),
+      JSON.stringify({ results: finalResults }),
       {
         status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
 
