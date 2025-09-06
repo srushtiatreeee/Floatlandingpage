@@ -16,6 +16,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -87,6 +88,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ profile, onProfileUpdate }) =
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setUploadError('Please select an image file');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+    setUploadSuccess(false);
+
     try {
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
