@@ -32,22 +32,19 @@ Deno.serve(async (req: Request) => {
       )
     }
 
-    // Call OpenAI API using the new format
-    const openAIResponse = await fetch('https://api.openai.com/v1/responses', {
+    // Call OpenAI API using the standard Chat Completions format
+    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${openAIApiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-5',
-        input: [
+        model: 'gpt-3.5-turbo',
+        messages: [
           {
-            role: 'developer',
-            content: [
-              {
-                type: 'input_text',
-                text: `You are a helpful assistant that breaks down big tasks into simple, clear subtasks. Given a main task title, return a list of 5 to 7 clear, short subtasks needed to complete it. The subtasks should be practical and written in plain language. Return them as a plain JSON array. Do not include any extra text or explanations.
+            role: 'system',
+            content: `You are a helpful assistant that breaks down big tasks into simple, clear subtasks. Given a main task title, return a list of 5 to 7 clear, short subtasks needed to complete it. The subtasks should be practical and written in plain language. Return them as a plain JSON array. Do not include any extra text or explanations.
 Main task: "Plan a wedding"
 Example output:
 [
@@ -59,33 +56,13 @@ Example output:
   "Choose wedding dress",
   "Plan honeymoon"
 ]
-Now generate subtasks for this task:
-"${taskTitle}"`
-              }
-            ]
+Now generate subtasks for this task:`
           },
           {
             role: 'user',
-            content: [
-              {
-                type: 'input_text',
-                text: `Generate subtasks for: ${taskTitle}`
-              }
-            ]
+            content: `"${taskTitle}"`
           }
-        ],
-        text: {
-          format: {
-            type: 'text'
-          },
-          verbosity: 'medium'
-        },
-        reasoning: {
-          effort: 'medium',
-          summary: 'auto'
-        },
-        tools: [],
-        store: true
+        ]
       }),
     })
 
@@ -97,15 +74,12 @@ Now generate subtasks for this task:
 
     const openAIData = await openAIResponse.json()
     
-    // Handle the new response format
-    let content = ''
-    if (openAIData.content && openAIData.content[0] && openAIData.content[0].text) {
-      content = openAIData.content[0].text
-    } else if (openAIData.choices && openAIData.choices[0] && openAIData.choices[0].message) {
-      content = openAIData.choices[0].message.content
-    } else {
+    // Extract content from the standard Chat Completions response
+    if (!openAIData.choices || !openAIData.choices[0] || !openAIData.choices[0].message) {
       throw new Error('No content received from OpenAI')
     }
+
+    const content = openAIData.choices[0].message.content
 
     // Parse the JSON array from the response
     let subtasks: string[]
