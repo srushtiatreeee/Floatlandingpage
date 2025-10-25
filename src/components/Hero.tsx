@@ -1,13 +1,15 @@
 import React from 'react';
-import { ArrowRight, Play, Zap, Users, TrendingUp, CheckSquare, Clock } from 'lucide-react';
+import { ArrowRight, Play, Zap, Users, TrendingUp, CheckSquare, Clock, Award, FileText } from 'lucide-react';
 
 interface HeroProps {
   onGetStartedClick?: () => void;
   onTasksClick?: () => void;
   onTimeTrackerClick?: () => void;
+  onPerformanceClick?: () => void;
+  onReportsClick?: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onGetStartedClick, onTasksClick, onTimeTrackerClick }) => {
+const Hero: React.FC<HeroProps> = ({ onGetStartedClick, onTasksClick, onTimeTrackerClick, onPerformanceClick, onReportsClick }) => {
   return (
     <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
       {/* Background Elements */}
@@ -72,36 +74,68 @@ const Hero: React.FC<HeroProps> = ({ onGetStartedClick, onTasksClick, onTimeTrac
       </div>
 
       {/* Quick Access Cards */}
-      <div className="mt-16 grid md:grid-cols-2 gap-6 relative z-10">
+      <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
         <button
           onClick={onTasksClick}
-          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
         >
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <CheckSquare className="text-white" size={28} />
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <CheckSquare className="text-white" size={24} />
             </div>
-            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={24} />
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={20} />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Task Manager</h3>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Organize your projects with AI-powered subtask generation and smart progress tracking.
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Tasks</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            AI-powered task management with smart subtasks.
           </p>
         </button>
 
         <button
           onClick={onTimeTrackerClick}
-          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
         >
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <Clock className="text-white" size={28} />
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <Clock className="text-white" size={24} />
             </div>
-            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={24} />
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={20} />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Time Tracker</h3>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Monitor your timeline with estimated vs actual hours and visualize your task progress.
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Time</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            Track estimates vs actual hours with timeline view.
+          </p>
+        </button>
+
+        <button
+          onClick={onPerformanceClick}
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Award className="text-white" size={24} />
+            </div>
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={20} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Performance</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            Earn achievements and manage client reminders.
+          </p>
+        </button>
+
+        <button
+          onClick={onReportsClick}
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-6 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <FileText className="text-white" size={24} />
+            </div>
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={20} />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Reports</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+            Auto-generate invoices and track billing.
           </p>
         </button>
       </div>

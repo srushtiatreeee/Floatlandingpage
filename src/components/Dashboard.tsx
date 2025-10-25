@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
 import TaskTracker from './TaskTracker';
 import TimeTracker from './TimeTracker';
+import Performance from './Performance';
+import Reports from './Reports';
 import ProfilePage from './ProfilePage';
 import Hero from './Hero';
 import Benefits from './Benefits';
@@ -25,7 +27,7 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
-  const [activeView, setActiveView] = useState<'home' | 'profile' | 'tasks' | 'time'>('home');
+  const [activeView, setActiveView] = useState<'home' | 'profile' | 'tasks' | 'time' | 'performance' | 'reports'>('home');
 
   useEffect(() => {
     if (user) {
@@ -233,6 +235,30 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
                 <TimeTracker />
               </>
             )}
+
+            {activeView === 'performance' && (
+              <>
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Performance Dashboard</h1>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Track your achievements, streaks, and client reminders
+                  </p>
+                </div>
+                <Performance />
+              </>
+            )}
+
+            {activeView === 'reports' && (
+              <>
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Reports & Billing</h1>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Generate invoices and track revenue from your tasks
+                  </p>
+                </div>
+                <Reports />
+              </>
+            )}
           </div>
         </main>
       ) : (
@@ -242,6 +268,8 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
             onGetStartedClick={() => { setShowProfile(true); setActiveView('profile'); }}
             onTasksClick={() => { setShowProfile(true); setActiveView('tasks'); }}
             onTimeTrackerClick={() => { setShowProfile(true); setActiveView('time'); }}
+            onPerformanceClick={() => { setShowProfile(true); setActiveView('performance'); }}
+            onReportsClick={() => { setShowProfile(true); setActiveView('reports'); }}
           />
           <Benefits />
           <HowItWorks />
