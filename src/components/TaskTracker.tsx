@@ -111,8 +111,11 @@ const TaskTracker: React.FC = () => {
       }
 
       setTasks([data, ...tasks]);
+      const taskTitle = newTask.title.trim();
       setNewTask({ title: '', priority: 'medium', status: 'pending' });
       setShowAddForm(false);
+
+      generateSubtasks(data.id, taskTitle);
     } catch (error) {
       console.error('Error:', error);
     }
