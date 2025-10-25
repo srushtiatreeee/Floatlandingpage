@@ -337,6 +337,24 @@ const TaskTracker: React.FC = () => {
     }
   };
 
+  const calculateProgress = (taskId: string) => {
+    const taskSubtasks = subtasks[taskId] || [];
+    if (taskSubtasks.length === 0) return { percentage: 0, completed: 0, total: 0 };
+
+    const completed = taskSubtasks.filter(st => st.status === 'done').length;
+    const total = taskSubtasks.length;
+    const percentage = Math.round((completed / total) * 100);
+
+    return { percentage, completed, total };
+  };
+
+  const getProgressColor = (percentage: number) => {
+    if (percentage === 100) return 'from-green-400 to-green-500';
+    if (percentage >= 70) return 'from-blue-400 to-blue-500';
+    if (percentage >= 40) return 'from-yellow-400 to-yellow-500';
+    return 'from-orange-400 to-orange-500';
+  };
+
   const taskStats = {
     total: tasks.length,
     pending: tasks.filter(t => t.status === 'pending').length,
@@ -543,12 +561,63 @@ const TaskTracker: React.FC = () => {
               <React.Fragment key={task.id}>
                 <div
                 key={task.id}
-                className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-2xl border border-gray-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300"
+                className="relative flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-700/50 rounded-2xl border border-gray-200/50 dark:border-gray-600/50 hover:shadow-md transition-all duration-300 overflow-hidden"
               >
-                <div className="flex items-center space-x-4 flex-1">
+                <div className="flex items-center space-x-4 flex-1 relative z-10">
                   {getStatusIcon(task.status)}
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 dark:text-white">{task.title}</h4>
+                    <div className="flex items-center justify-between mb-1">
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{task.title}</h4>
+                      {(() => {
+                        const progress = calculateProgress(task.id);
+                        return progress.total > 0 ? (
+                          <div className="absolute top-2 right-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg border border-gray-200/50 dark:border-gray-600/50 flex items-center space-x-2 z-20">
+                            <div className="flex items-center space-x-1.5">
+                              <div className="relative w-12 h-12">
+                                <svg className="transform -rotate-90 w-12 h-12">
+                                  <circle
+                                    cx="24"
+                                    cy="24"
+                                    r="20"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                    fill="none"
+                                    className="text-gray-200 dark:text-gray-700"
+                                  />
+                                  <circle
+                                    cx="24"
+                                    cy="24"
+                                    r="20"
+                                    stroke={`url(#gradient-${task.id})`}
+                                    strokeWidth="3"
+                                    fill="none"
+                                    strokeDasharray={`${2 * Math.PI * 20}`}
+                                    strokeDashoffset={`${2 * Math.PI * 20 * (1 - progress.percentage / 100)}`}
+                                    className="transition-all duration-500 ease-out"
+                                    strokeLinecap="round"
+                                  />
+                                  <defs>
+                                    <linearGradient id={`gradient-${task.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <stop offset="0%" className={`${getProgressColor(progress.percentage).includes('green') ? 'text-green-400' : getProgressColor(progress.percentage).includes('blue') ? 'text-blue-400' : getProgressColor(progress.percentage).includes('yellow') ? 'text-yellow-400' : 'text-orange-400'}`} stopColor="currentColor" />
+                                      <stop offset="100%" className={`${getProgressColor(progress.percentage).includes('green') ? 'text-green-500' : getProgressColor(progress.percentage).includes('blue') ? 'text-blue-500' : getProgressColor(progress.percentage).includes('yellow') ? 'text-yellow-500' : 'text-orange-500'}`} stopColor="currentColor" />
+                                    </linearGradient>
+                                  </defs>
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className={`text-xs font-bold bg-gradient-to-r ${getProgressColor(progress.percentage)} bg-clip-text text-transparent`}>
+                                    {progress.percentage}%
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-xs">
+                                <div className="font-semibold text-gray-900 dark:text-white">{progress.completed}/{progress.total}</div>
+                                <div className="text-gray-500 dark:text-gray-400 text-[10px]">done</div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null;
+                      })()}
+                    </div>
                     <div className="flex items-center space-x-3 mt-1">
                       <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(task.status)}`}>
                         {task.status.replace('_', ' ')}
@@ -615,33 +684,53 @@ const TaskTracker: React.FC = () => {
               )}
 
               {/* Existing Subtasks */}
-              {subtasks[task.id] && subtasks[task.id].length > 0 && (
-                <div className="ml-8 mt-3 space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Subtasks:</h5>
-                  {subtasks[task.id].map((subtask) => (
-                    <div key={subtask.id} className="flex items-center space-x-3 p-2 bg-gray-50/50 dark:bg-gray-700/30 rounded-lg">
-                      <button
-                        onClick={() => {
-                          const nextStatus = subtask.status === 'pending' ? 'in_progress' : 
-                                           subtask.status === 'in_progress' ? 'done' : 'pending';
-                          updateSubtaskStatus(subtask.id, nextStatus);
-                        }}
-                        className="flex-shrink-0"
-                      >
-                        {getStatusIcon(subtask.status)}
-                      </button>
-                      <span className={`text-sm flex-1 ${
-                        subtask.status === 'done' ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                        {subtask.title}
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(subtask.status)}`}>
-                        {subtask.status.replace('_', ' ')}
-                      </span>
+              {subtasks[task.id] && subtasks[task.id].length > 0 && (() => {
+                const progress = calculateProgress(task.id);
+                return (
+                  <div className="ml-8 mt-3 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-sm font-semibold text-gray-600 dark:text-gray-400">Subtasks:</h5>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {progress.completed} of {progress.total} completed
+                        </span>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={`absolute top-0 left-0 h-full bg-gradient-to-r ${getProgressColor(progress.percentage)} transition-all duration-500 ease-out rounded-full`}
+                        style={{ width: `${progress.percentage}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {subtasks[task.id].map((subtask) => (
+                        <div key={subtask.id} className="flex items-center space-x-3 p-2 bg-gray-50/50 dark:bg-gray-700/30 rounded-lg hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-colors">
+                          <button
+                            onClick={() => {
+                              const nextStatus = subtask.status === 'pending' ? 'in_progress' :
+                                               subtask.status === 'in_progress' ? 'done' : 'pending';
+                              updateSubtaskStatus(subtask.id, nextStatus);
+                            }}
+                            className="flex-shrink-0 hover:scale-110 transition-transform"
+                          >
+                            {getStatusIcon(subtask.status)}
+                          </button>
+                          <span className={`text-sm flex-1 transition-all ${
+                            subtask.status === 'done' ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'
+                          }`}>
+                            {subtask.title}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(subtask.status)}`}>
+                            {subtask.status.replace('_', ' ')}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               </React.Fragment>
             ))
           )}
