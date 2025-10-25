@@ -1,8 +1,10 @@
 import React from 'react';
-import { ArrowRight, Play, Zap, Users, TrendingUp } from 'lucide-react';
+import { ArrowRight, Play, Zap, Users, TrendingUp, CheckSquare, Clock } from 'lucide-react';
 
 interface HeroProps {
   onGetStartedClick?: () => void;
+  onTasksClick?: () => void;
+  onTimeTrackerClick?: () => void;
 }
 
 const Hero: React.FC<HeroProps> = ({ onGetStartedClick }) => {
@@ -60,7 +62,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStartedClick }) => {
             <div className="absolute inset-0 bg-gradient-to-br from-orange-300 via-orange-400 to-orange-500 rounded-full opacity-80 blur-xl transform rotate-12"></div>
             <div className="absolute inset-4 bg-gradient-to-tr from-orange-200 via-orange-300 to-orange-400 rounded-full opacity-90 blur-lg transform -rotate-6"></div>
             <div className="absolute inset-8 bg-gradient-to-bl from-white via-orange-100 to-orange-200 rounded-full shadow-2xl transform rotate-3"></div>
-            
+
             {/* Floating elements */}
             <div className="absolute -top-4 -right-4 w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl shadow-lg transform rotate-12 opacity-80"></div>
             <div className="absolute -bottom-6 -left-6 w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl shadow-lg transform -rotate-12 opacity-70"></div>
@@ -68,6 +70,42 @@ const Hero: React.FC<HeroProps> = ({ onGetStartedClick }) => {
           </div>
         </div>
       </div>
+
+      {/* Quick Access Cards */}
+      <div className="mt-16 grid md:grid-cols-2 gap-6 relative z-10">
+        <button
+          onClick={onTasksClick}
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <CheckSquare className="text-white" size={28} />
+            </div>
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={24} />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Task Manager</h3>
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            Organize your projects with AI-powered subtask generation and smart progress tracking.
+          </p>
+        </button>
+
+        <button
+          onClick={onTimeTrackerClick}
+          className="group bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl p-8 shadow-lg border border-white/20 dark:border-gray-700/20 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-left"
+        >
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <Clock className="text-white" size={28} />
+            </div>
+            <ArrowRight className="text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" size={24} />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Time Tracker</h3>
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+            Monitor your timeline with estimated vs actual hours and visualize your task progress.
+          </p>
+        </button>
+      </div>
+
     </section>
   );
 };

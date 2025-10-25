@@ -131,22 +131,6 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
                 Home
               </button>
               <button
-                onClick={() => { setShowProfile(true); setActiveView('tasks'); }}
-                className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
-                  activeView === 'tasks' ? 'text-orange-500 dark:text-orange-400' : ''
-                }`}
-              >
-                Tasks
-              </button>
-              <button
-                onClick={() => { setShowProfile(true); setActiveView('time'); }}
-                className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
-                  activeView === 'time' ? 'text-orange-500 dark:text-orange-400' : ''
-                }`}
-              >
-                Time Tracker
-              </button>
-              <button
                 onClick={() => { setShowProfile(true); setActiveView('profile'); }}
                 className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
                   activeView === 'profile' ? 'text-orange-500 dark:text-orange-400' : ''
@@ -254,7 +238,11 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
       ) : (
         /* Landing Page Content */
         <>
-          <Hero onGetStartedClick={() => setShowProfile(true)} />
+          <Hero
+            onGetStartedClick={() => { setShowProfile(true); setActiveView('profile'); }}
+            onTasksClick={() => { setShowProfile(true); setActiveView('tasks'); }}
+            onTimeTrackerClick={() => { setShowProfile(true); setActiveView('time'); }}
+          />
           <Benefits />
           <HowItWorks />
           <SocialProof />
