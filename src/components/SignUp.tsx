@@ -190,7 +190,7 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
       }
 
       // Show email confirmation - profile will be created when user logs in
-      setShowEmailConfirmation(true);
+      onSignUpSuccess();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       if (errorMessage.includes('over_email_send_rate_limit')) {
@@ -202,6 +202,7 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
 
     setLoading(false);
   };
+
   const renderStepIndicator = () => {
     return (
       <div className="flex items-center justify-center mb-8">
@@ -226,65 +227,6 @@ const SignUp: React.FC<SignUpProps> = ({ onBackToHome, onSignUpSuccess }) => {
       </div>
     );
   };
-
-  if (showEmailConfirmation) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-orange-200 via-orange-300 to-orange-400 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute top-40 left-20 w-64 h-64 bg-gradient-to-br from-blue-200 via-blue-300 to-blue-400 rounded-full opacity-15 blur-2xl"></div>
-        <div className="absolute bottom-20 right-32 w-80 h-80 bg-gradient-to-br from-purple-200 via-purple-300 to-purple-400 rounded-full opacity-10 blur-3xl"></div>
-
-        <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-md w-full space-y-8">
-            {/* Float Logo */}
-            <div className="text-center">
-              <button 
-                onClick={onBackToHome}
-                className="inline-flex items-center space-x-3 group hover:scale-105 transition-transform duration-300"
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xl">F</span>
-                </div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Float
-                </div>
-              </button>
-            </div>
-
-            {/* Email Confirmation Message */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-gray-700/20 text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Mail className="w-8 h-8 text-white" />
-              </div>
-              
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                Check Your Email
-              </h2>
-              
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                We've sent a confirmation link to <strong>{formData.email}</strong>. 
-                You must click the confirmation link in your email before you can sign in to your account.
-              </p>
-              
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-4 mb-6">
-                <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  <strong>Important:</strong> You cannot log in until you confirm your email address. Check your spam folder if you don't see the confirmation email within a few minutes.
-                </p>
-              </div>
-              
-              <button
-                onClick={onBackToHome}
-                className="w-full bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white py-3 px-6 rounded-2xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-              >
-                Back to Home
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const renderStep1 = () => (
     <div className="space-y-6">
