@@ -7,7 +7,7 @@ interface HeroProps {
   onTimeTrackerClick?: () => void;
 }
 
-const Hero: React.FC<HeroProps> = ({ onGetStartedClick }) => {
+const Hero: React.FC<HeroProps> = ({ onGetStartedClick, onTasksClick, onTimeTrackerClick }) => {
   return (
     <section className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative overflow-hidden">
       {/* Background Elements */}
