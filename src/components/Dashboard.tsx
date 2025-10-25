@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { User, Settings, LogOut, Edit3, MapPin, Briefcase, Phone, Mail, Sun, Moon, CheckSquare } from 'lucide-react';
+import { User, Settings, LogOut, Edit3, MapPin, Briefcase, Phone, Mail, Sun, Moon, CheckSquare, Clock } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import type { Database } from '../lib/supabase';
 import TaskTracker from './TaskTracker';
+import TimeTracker from './TimeTracker';
 import ProfilePage from './ProfilePage';
 import Hero from './Hero';
 import Benefits from './Benefits';
@@ -24,6 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [showProfile, setShowProfile] = useState(false);
+  const [activeView, setActiveView] = useState<'home' | 'profile' | 'tasks' | 'time'>('home');
 
   useEffect(() => {
     if (user) {
@@ -120,18 +122,34 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
             </div>
             
             <nav className="hidden md:flex items-center space-x-8">
-              <button 
-                onClick={() => setShowProfile(false)}
+              <button
+                onClick={() => { setShowProfile(false); setActiveView('home'); }}
                 className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
-                  !showProfile ? 'text-orange-500 dark:text-orange-400' : ''
+                  activeView === 'home' ? 'text-orange-500 dark:text-orange-400' : ''
                 }`}
               >
                 Home
               </button>
-              <button 
-                onClick={() => setShowProfile(true)}
+              <button
+                onClick={() => { setShowProfile(true); setActiveView('tasks'); }}
                 className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
-                  showProfile ? 'text-orange-500 dark:text-orange-400' : ''
+                  activeView === 'tasks' ? 'text-orange-500 dark:text-orange-400' : ''
+                }`}
+              >
+                Tasks
+              </button>
+              <button
+                onClick={() => { setShowProfile(true); setActiveView('time'); }}
+                className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
+                  activeView === 'time' ? 'text-orange-500 dark:text-orange-400' : ''
+                }`}
+              >
+                Time Tracker
+              </button>
+              <button
+                onClick={() => { setShowProfile(true); setActiveView('profile'); }}
+                className={`text-gray-700 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 transition-colors font-medium ${
+                  activeView === 'profile' ? 'text-orange-500 dark:text-orange-400' : ''
                 }`}
               >
                 Profile
@@ -182,34 +200,55 @@ const Dashboard: React.FC<DashboardProps> = ({ darkMode, setDarkMode }) => {
       </header>
 
       {showProfile ? (
-        /* Profile View */
-        <main className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <main className="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="py-8">
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                Profile Settings
-              </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Manage your profile information and settings
-              </p>
-            </div>
-            <ProfilePage 
-              profile={profile} 
-              onProfileUpdate={setProfile}
-            />
-            
-            {/* Task Manager Section */}
-            <div className="mt-12">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                  Task Manager
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Manage your tasks and projects
-                </p>
-              </div>
-              <TaskTracker />
-            </div>
+            {activeView === 'profile' && (
+              <>
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    Profile Settings
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Manage your profile information and settings
+                  </p>
+                </div>
+                <div className="max-w-4xl mx-auto">
+                  <ProfilePage
+                    profile={profile}
+                    onProfileUpdate={setProfile}
+                  />
+                </div>
+              </>
+            )}
+
+            {activeView === 'tasks' && (
+              <>
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+                    Task Manager
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Manage your tasks and projects
+                  </p>
+                </div>
+                <TaskTracker />
+              </>
+            )}
+
+            {activeView === 'time' && (
+              <>
+                <div className="text-center mb-8">
+                  <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center justify-center space-x-3">
+                    <Clock className="text-orange-500" size={36} />
+                    <span>Time Tracker</span>
+                  </h1>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    Track time estimates and monitor your task timeline
+                  </p>
+                </div>
+                <TimeTracker />
+              </>
+            )}
           </div>
         </main>
       ) : (
